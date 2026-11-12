@@ -8,6 +8,7 @@ struct ReaderView: View {
     @AppStorage(SettingsKey.redHighlight) private var redHighlight = true
     @AppStorage(SettingsKey.theme) private var theme = Theme.charcoal
     @State private var keyMonitor: Any?
+    @State private var scrollRemainder: CGFloat = 0
     @State private var pointerMoves = 0
     @State private var overToolbar = false
     @State private var toolbarsVisible = true
@@ -45,10 +46,11 @@ struct ReaderView: View {
         // A window-level key monitor instead of .focusable/.onKeyPress: SwiftUI focus never reliably landed on
         // this view (e.g. when opened from Services/Finder), which left Space, arrows and Esc dead.
         .onAppear {
-            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .scrollWheel]) { event in
                 // Only the reader window (title "Odak", not Settings) and not while a sheet such as statistics is open.
                 guard let window = event.window, window.title == "Odak", window.attachedSheet == nil,
                       !(window.firstResponder is NSText) else { return event }
+                if event.type == .scrollWheel { return handleScroll(event) ? nil : event }
                 return handleKey(event) ? nil : event
             }
         }
@@ -235,6 +237,20 @@ struct ReaderView: View {
             guard event.charactersIgnoringModifiers?.lowercased() == "r" else { return false }
             engine.restart()
         }
+        return true
+    }
+
+    /// Vertical scrolling scrubs through the words like a document: down (or swipe up) = forward. Pauses playback.
+    private func handleScroll(_ event: NSEvent) -> Bool {
+        let dy = event.scrollingDeltaY
+        guard abs(dy) > abs(event.scrollingDeltaX) else { return false }
+        // Trackpads send pixel deltas (many small events), mouse wheels about one line per notch.
+        scrollRemainder -= event.hasPreciseScrollingDeltas ? dy / 12 : dy
+        let steps = Int(scrollRemainder)
+        guard steps != 0 else { return true }
+        scrollRemainder -= CGFloat(steps)
+        if engine.isPlaying { engine.pause() }
+        engine.stepWord(by: steps)
         return true
     }
 }

@@ -59,6 +59,7 @@ The top toolbar shows the time left and lets you change the speed, the font size
 | --- | --- |
 | Space | Play / pause |
 | ← / → | Previous / next word |
+| Scroll | Move through the words (pauses reading) |
 | ⌥← / ⌥→ | Previous / next sentence |
 | ↑ / ↓ | Speed ±25 WPM |
 | R | Restart from the beginning |
@@ -174,7 +175,7 @@ Script uygulamayı derler, `/Applications` (ya da `~/Applications`) klasörüne 
 
 Üst çubuk kalan süreyi gösterir; hızı, yazı boyutunu ve temayı buradan değiştirirsiniz. Alt çubukta ilerleme çubuğu (tıklayarak ya da sürükleyerek atlayın) ve oynatma düğmeleri vardır.
 
-**Kısayollar:** Boşluk oynat/duraklat · ←/→ kelime · ⌥←/⌥→ cümle · ↑/↓ hız ±25 · R baştan · Esc metne dön · ⌘↩ oku · ⇧⌘V yapıştır ve oku · ⌘O dosya aç · ⌘Y istatistikler · ⌘, ayarlar.
+**Kısayollar:** Boşluk oynat/duraklat · ←/→ kelime · kaydırma kelimeler arasında gezinir (okumayı duraklatır) · ⌥←/⌥→ cümle · ↑/↓ hız ±25 · R baştan · Esc metne dön · ⌘↩ oku · ⇧⌘V yapıştır ve oku · ⌘O dosya aç · ⌘Y istatistikler · ⌘, ayarlar.
 
 **Her uygulamadan okuma:** metni seçip sağ tıklayın › **Servisler** › **Odak ile oku**. Listede yoksa **Sistem Ayarları › Klavye › Klavye Kısayolları… › Servisler › Metin** bölümünden **Odak ile oku**'yu açın.
 
