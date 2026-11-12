@@ -1,0 +1,185 @@
+/* Soft themes, picked with data-theme on <html> (stored in chrome.storage.local "theme"). */
+:root, [data-theme="charcoal"] {
+  color-scheme: dark;
+  --bg: #2B2B2D; --strong: #ECE7DF; --dim: #8E8B86; --faint: #4A4947; --accent: #E8873A;
+}
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --bg: #1F2430; --strong: #D8DEE9; --dim: #7D8799; --faint: #3B4252; --accent: #E5A55D;
+}
+[data-theme="sepia"] {
+  color-scheme: light;
+  --bg: #F3EAD7; --strong: #4A3B2C; --dim: #9C8B74; --faint: #DDD0B6; --accent: #C8642B;
+}
+[data-theme="paper"] {
+  color-scheme: light;
+  --bg: #FAF8F3; --strong: #2F2E2B; --dim: #9A968E; --faint: #E4E0D7; --accent: #D9692E;
+}
+
+:root {
+  --serif: Georgia, "Iowan Old Style", serif;
+  --font: 64px; /* base word size, set by reader.js */
+  --hover: color-mix(in srgb, var(--strong) 10%, transparent);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--bg);
+  color: var(--strong);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+[hidden] { display: none !important; }
+
+/* Toolbars fade instead of disappearing so nothing jumps. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 16px;
+  transition: opacity 0.4s;
+}
+body.idle .toolbar:not(:hover, :has(:focus-visible)) { opacity: 0; }
+
+#remaining { font-style: italic; color: var(--dim); min-width: 64px; font-variant-numeric: tabular-nums; }
+.spacer { flex: 1; }
+
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper .label { color: var(--dim); }
+.stepper output { min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.arrows { display: flex; flex-direction: column; }
+.arrows button { width: 22px; height: 13px; border-radius: 4px; }
+.arrows svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+}
+button:hover { color: var(--strong); background: var(--hover); }
+button.icon { width: 30px; height: 30px; }
+button svg { width: 18px; height: 18px; fill: currentColor; }
+svg .stroke { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+button:disabled { opacity: 0.35; cursor: default; background: transparent; color: var(--dim); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Reading area: before text, word line, after text. Equal flexible halves keep the word line centered. */
+#stage {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0 40px;
+  cursor: default;
+}
+
+.context { transition: opacity 0.25s; }
+body.playing .context { opacity: 0; transition-duration: 0.6s; }
+
+#before, #after {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--dim);
+  font-family: var(--serif);
+  font-size: clamp(15px, calc(var(--font) * 0.3), 26px);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#before {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* last lines sit right above the word line, overflow clips at the top */
+  mask-image: linear-gradient(to bottom, transparent, #000 60%);
+}
+#after { mask-image: linear-gradient(to top, transparent, #000 60%); }
+#hint { margin: 0 0 0.6em; text-align: center; font-family: system-ui, sans-serif; font-size: 13px; color: var(--dim); }
+
+#word {
+  flex: none;
+  height: calc(var(--font) * 1.6);
+  position: relative;
+  /* Two equal flexible halves keep the ORP letter at a fixed, centered x. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  font-family: var(--serif);
+  font-size: var(--font);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+#left, #right { display: flex; min-width: 0; overflow: hidden; }
+#left { justify-content: flex-end; }
+#cur-left, #cur-right { flex: none; }
+#orp { color: var(--accent); }
+
+/* Neighbour words shrink and clip at the outer edge; the current word never does. */
+#prev-words, #next-words { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--dim); }
+#prev-words { direction: rtl; } /* rtl clips the head instead of the tail */
+#prev-words > span { direction: ltr; unicode-bidi: isolate; }
+
+#word::before, #word::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 1px);
+  width: 2px;
+  height: 14px;
+  background: var(--faint);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+body.playing #word::before, body.playing #word::after { opacity: 1; }
+#word::before { top: 4px; }
+#word::after { bottom: 4px; }
+
+#message {
+  grid-row: 2;
+  margin: 0;
+  padding: 0 32px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 15px;
+  color: var(--dim);
+  user-select: text;
+}
+
+#bottom { flex-direction: column; align-items: stretch; gap: 4px; padding-bottom: 10px; }
+
+#progress {
+  position: relative;
+  height: 16px;
+  cursor: pointer;
+  touch-action: none;
+}
+#track { position: absolute; left: 0; right: 0; top: 6.5px; height: 3px; border-radius: 2px; background: var(--faint); overflow: hidden; }
+#fill { height: 100%; width: 0; background: var(--dim); }
+#thumb {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--strong);
+}
+#progress:hover #fill { background: var(--strong); }
+
+#controls { display: flex; justify-content: flex-end; gap: 4px; }

@@ -1,0 +1,66 @@
+<!doctype html>
+<html data-theme="charcoal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Odak</title>
+  <link rel="stylesheet" href="reader.css">
+  <script type="module" src="reader.js"></script>
+</head>
+<body>
+  <header id="top" class="toolbar">
+    <span id="remaining"></span>
+    <div class="stepper" id="wpm-group" role="group">
+      <span class="label" id="wpm-name"></span>
+      <output id="wpm-value"></output>
+      <span class="arrows">
+        <button id="wpm-up" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button id="wpm-down" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      </span>
+    </div>
+    <div class="stepper" id="font-group" role="group">
+      <span class="label" id="font-name"></span>
+      <output id="font-value"></output>
+      <span class="arrows">
+        <button id="font-up" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button id="font-down" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      </span>
+    </div>
+    <span class="spacer"></span>
+    <button id="theme" class="icon" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" class="stroke"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z"/></svg>
+    </button>
+  </header>
+
+  <main id="stage">
+    <div id="before" class="context"></div>
+    <div id="word" role="img" aria-live="off">
+      <span id="left"><span id="prev-words" class="context"><span></span></span><span id="cur-left"></span></span><span id="orp"></span><span id="right"><span id="cur-right"></span><span id="next-words" class="context"></span></span>
+    </div>
+    <div id="after" class="context"><p id="hint" hidden></p><div id="after-text"></div></div>
+  </main>
+  <p id="message" hidden></p>
+
+  <footer id="bottom" class="toolbar">
+    <div id="progress" role="slider" tabindex="0" aria-valuemin="1"><div id="track"><div id="fill"></div></div><div id="thumb"></div></div>
+    <div id="controls">
+      <button id="toggle" class="icon" type="button">
+        <svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>
+        <svg id="pause-icon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <button id="prev" class="icon" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 6v12L2.5 12zM21 6v12l-8.5-6z"/></svg>
+      </button>
+      <button id="next" class="icon" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 6v12l8.5-6zM3 6v12l8.5-6z"/></svg>
+      </button>
+      <button id="restart" class="icon" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4 3.5v5h5z"/></svg>
+      </button>
+      <button id="fullscreen" class="icon" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+      </button>
+    </div>
+  </footer>
+</body>
+</html>
