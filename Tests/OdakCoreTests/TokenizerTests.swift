@@ -22,6 +22,23 @@ import Testing
         #expect(Tokenizer.tokenize("word—word").map(\.text) == ["word—word"])
     }
 
+    @Test func splitsLongURLsAfterSeparators() {
+        let t = Tokenizer.tokenize("See https://github.com/halil-balci/odak/blob/main/README.md. Done")
+        #expect(t.map(\.text) == ["See", "https://", "github.", "com/", "halil-", "balci/", "odak/", "blob/", "main/",
+                                   "README.md.", "Done"])
+        #expect(t.map(\.joinsNext) == [false] + Array(repeating: true, count: 8) + [false, false])
+        #expect(t[2].delayMultiplier == 1)  // inner "github." gets no sentence pause
+        #expect(t[9].delayMultiplier == Timing.sentenceEnd)
+        #expect(t[10].sentenceIndex == 1)
+        #expect(t.dropLast().map { $0.text + $0.separator }.joined().hasPrefix("See https://github.com/halil-balci/odak/"))
+    }
+
+    @Test func shortOrSeparatorFreeWordsStayWhole() {
+        #expect(Tokenizer.tokenize("e-posta ve/veya Muvaffakiyetsizleştiricileştiriveremeyebileceklerimizdenmişsinizcesine")
+            .map(\.text) == ["e-posta", "ve/veya", "Muvaffakiyetsizleştiricileştiriveremeyebileceklerimizdenmişsinizcesine"])
+        #expect(Tokenizer.pieces("/usr/local/share/x") == ["/usr/", "local/", "share/x"])
+    }
+
     @Test func turkishUnicode() {
         let t = Tokenizer.tokenize("Çığ düştü, İstanbul'da şöyle böyle.")
         #expect(t.map(\.text) == ["Çığ", "düştü,", "İstanbul'da", "şöyle", "böyle."])

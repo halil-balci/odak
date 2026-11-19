@@ -81,15 +81,17 @@ function render() {
   }
 }
 
-/** Words joined with spaces, with a blank line after paragraph ends. */
-const joined = (tokens) => tokens.map((x) => x.text + (x.endsParagraph ? "\n\n" : " ")).join("").trimEnd();
+/** Words joined with spaces (none inside a split long word), with a blank line after paragraph ends. */
+const joined = (tokens) => tokens.map((x) => x.text + (x.endsParagraph ? "\n\n" : x.joinsNext ? "" : " ")).join("").trimEnd();
 
 function renderContext() {
   const i = reader.index, tokens = reader.tokens;
   // The gap is a text space, not padding: padding can't shrink and would clip a fitted current word.
   const prev = joined(tokens.slice(Math.max(i - neighbours, 0), i)), next = joined(tokens.slice(i + 1, i + 1 + neighbours));
-  $("prev-words").firstChild.textContent = prev && prev + "\u00a0";
-  $("next-words").textContent = next && "\u00a0" + next;
+  // No gap where a split long word continues, so a URL reads as one piece.
+  const gapBefore = tokens[i - 1]?.joinsNext ? "" : "\u00a0", gapAfter = tokens[i]?.joinsNext ? "" : "\u00a0";
+  $("prev-words").firstChild.textContent = prev && prev + gapBefore;
+  $("next-words").textContent = next && gapAfter + next;
   $("before").textContent = joined(tokens.slice(Math.max(i - neighbours - contextTokens, 0), Math.max(i - neighbours, 0)));
   $("after-text").textContent = joined(tokens.slice(i + 1 + neighbours, i + 1 + neighbours + contextTokens));
 }

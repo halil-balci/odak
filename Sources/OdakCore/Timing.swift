@@ -13,9 +13,11 @@ public enum Timing {
     static let clauseEnders: Set<Character> = [",", ";", ":"]
     static let closers: Set<Character> = ["\"", "'", ")", "]", "}", "”", "’", "»"]
 
-    public static func multiplier(for word: String, endsParagraph: Bool) -> Double {
+    /// `endsWord` is false for the inner pieces of a split long word: they get no punctuation pause.
+    public static func multiplier(for word: String, endsParagraph: Bool, endsWord: Bool = true) -> Double {
         var base = 1.0
-        if endsParagraph { base = paragraphEnd }
+        if !endsWord {}
+        else if endsParagraph { base = paragraphEnd }
         else if endsSentence(word) { base = sentenceEnd }
         else if let c = lastMeaningful(word), clauseEnders.contains(c) { base = clause }
 

@@ -73,21 +73,24 @@ struct ReaderView: View {
     private var wordLine: some View {
         let parts = engine.currentToken?.parts ?? (left: "", orp: "", right: "")
         let i = engine.currentIndex, tokens = engine.tokens
-        let before = tokens.isEmpty ? "" : tokens[max(0, i - Self.neighbours)..<i].map(\.text).joined(separator: " ")
-        let after = tokens.isEmpty ? "" : tokens[min(i + 1, tokens.count)..<min(i + 1 + Self.neighbours, tokens.count)].map(\.text).joined(separator: " ")
+        let before = tokens.isEmpty ? "" : tokens[max(0, i - Self.neighbours)..<i].map { $0.text + ($0.joinsNext ? "" : " ") }.joined().trimmingCharacters(in: .whitespaces)
+        let after = tokens.isEmpty ? "" : tokens[min(i + 1, tokens.count)..<min(i + 1 + Self.neighbours, tokens.count)].map { $0.text + ($0.joinsNext ? "" : " ") }.joined().trimmingCharacters(in: .whitespaces)
+        // No gap where a split long word continues, so a URL reads as one piece.
+        let joinBefore = i > 0 && i <= tokens.count && tokens[i - 1].joinsNext
+        let joinAfter = engine.currentToken?.joinsNext ?? false
         return GeometryReader { geo in
             let size = fittedSize(parts, width: geo.size.width)
             let font = Font.system(size: size, weight: weight, design: fontDesign.design)
             // Two flexible halves of equal width keep the ORP letter centered at a fixed x.
             // Neighbours truncate at the outer edges; the current word is fixed-size and never cut.
             HStack(spacing: 0) {
-                HStack(spacing: size * 0.3) {
+                HStack(spacing: joinBefore ? 0 : size * 0.3) {
                     Text(before).foregroundStyle(theme.dim).truncationMode(.head).opacity(showContext ? 1 : 0)
                     Text(parts.left).fixedSize()
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Text(parts.orp).foregroundStyle(redHighlight ? theme.accent : theme.text).fixedSize()
-                HStack(spacing: size * 0.3) {
+                HStack(spacing: joinAfter ? 0 : size * 0.3) {
                     Text(parts.right).fixedSize()
                     Text(after).foregroundStyle(theme.dim).truncationMode(.tail).opacity(showContext ? 1 : 0)
                 }
@@ -131,7 +134,7 @@ struct ReaderView: View {
 
     /// Surrounding text, shown while paused. Overflow is clipped away from the word line with a soft fade.
     private func contextText(range: Range<Int>, alignment: Alignment) -> some View {
-        let text = engine.tokens[range].map { $0.endsParagraph ? $0.text + "\n\n" : $0.text + " " }.joined()
+        let text = engine.tokens[range].map { $0.text + $0.separator }.joined()
         let fade = alignment == .bottom ? [Color.clear, .black, .black] : [.black, .black, .clear]
         // The text lives in an overlay so its full height never pushes the toolbars out of the window.
         return Color.clear

@@ -1,7 +1,7 @@
 // Mirrors Tests/OdakCoreTests. Run: node --test chrome-extension/tests/*.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { tokenize, orpIndex, multiplier, parts, isWordCharacter, graphemes, Timing, Reader, formatTime, slowStartMultiplier, textHash } from "../core.js";
+import { tokenize, orpIndex, multiplier, parts, isWordCharacter, graphemes, Timing, Reader, formatTime, slowStartMultiplier, textHash, pieces } from "../core.js";
 
 const texts = (t) => t.map((x) => x.text);
 
@@ -201,4 +201,19 @@ test("textHash is FNV-1a 32-bit", () => {
   assert.equal(textHash("a"), "e40c292c");
   assert.equal(textHash("foobar"), "bf9cf968");
   assert.notEqual(textHash("Çığ"), textHash("Cig"));
+});
+
+test("splits long URLs after separators", () => {
+  const t = tokenize("See https://github.com/halil-balci/odak/blob/main/README.md. Done");
+  assert.deepEqual(texts(t), ["See", "https://", "github.", "com/", "halil-", "balci/", "odak/", "blob/", "main/", "README.md.", "Done"]);
+  assert.deepEqual(t.map((x) => x.joinsNext), [false, ...Array(8).fill(true), false, false]);
+  assert.equal(t[2].delayMultiplier, 1);
+  assert.equal(t[9].delayMultiplier, Timing.sentenceEnd);
+  assert.equal(t[10].sentenceIndex, 1);
+});
+
+test("short or separator-free words stay whole", () => {
+  const long = "Muvaffakiyetsizleştiricileştiriveremeyebileceklerimizdenmişsinizcesine";
+  assert.deepEqual(texts(tokenize(`e-posta ve/veya ${long}`)), ["e-posta", "ve/veya", long]);
+  assert.deepEqual(pieces("/usr/local/share/x"), ["/usr/", "local/", "share/x"]);
 });

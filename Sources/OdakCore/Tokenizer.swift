@@ -10,7 +10,7 @@ public enum Tokenizer {
             guard let last = tokens.last, !last.endsParagraph else { return }
             tokens[tokens.count - 1] = Token(text: last.text, orpIndex: last.orpIndex,
                                 delayMultiplier: Timing.multiplier(for: last.text, endsParagraph: true),
-                                sentenceIndex: last.sentenceIndex, endsParagraph: true)
+                                sentenceIndex: last.sentenceIndex, endsParagraph: true, joinsNext: last.joinsNext)
             startNewSentence = true
         }
 
@@ -22,14 +22,47 @@ public enum Tokenizer {
             }
             for word in words.map(String.init) {
                 if startNewSentence { sentence += 1; startNewSentence = false }
-                tokens.append(Token(text: word, orpIndex: ORP.index(for: word),
-                                    delayMultiplier: Timing.multiplier(for: word, endsParagraph: false),
-                                    sentenceIndex: sentence, endsParagraph: false))
+                let pieces = Self.pieces(word)
+                for (k, piece) in pieces.enumerated() {
+                    let last = k == pieces.count - 1
+                    tokens.append(Token(text: piece, orpIndex: ORP.index(for: piece),
+                                        delayMultiplier: Timing.multiplier(for: piece, endsParagraph: false, endsWord: last),
+                                        sentenceIndex: sentence, endsParagraph: false, joinsNext: !last))
+                }
                 if Timing.endsSentence(word) { startNewSentence = true }
             }
         }
         if !tokens.isEmpty { markParagraphEnd() }
         return tokens
+    }
+
+    static let splitLetters = 12
+    static let minPieceLetters = 3
+    static let separators: Set<Character> = ["/", "\\", "-", "_", ".", "?", "&", "=", "#", ":", "|"]
+
+    /// Splits a long word (URL, path, `a-b-c`) after its separators, e.g. `github.com/` `halil-` `balci`.
+    /// A run of separators stays together; pieces with fewer than `minPieceLetters` letters join a neighbour.
+    static func pieces(_ word: String) -> [String] {
+        guard word.filter(isWordCharacter).count > splitLetters else { return [word] }
+        let chars = Array(word)
+        var raw: [String] = [], current = ""
+        for (i, c) in chars.enumerated() {
+            current.append(c)
+            if separators.contains(c), i + 1 < chars.count, !separators.contains(chars[i + 1]) {
+                raw.append(current)
+                current = ""
+            }
+        }
+        raw.append(current)
+        var result: [String] = [], buffer = ""
+        for piece in raw {
+            buffer += piece
+            if buffer.filter(isWordCharacter).count >= minPieceLetters { result.append(buffer); buffer = "" }
+        }
+        if !buffer.isEmpty {
+            if result.isEmpty { result.append(buffer) } else { result[result.count - 1] += buffer }
+        }
+        return result
     }
 
     static func isWordCharacter(_ c: Character) -> Bool { c.isLetter || c.isNumber }

@@ -43,10 +43,12 @@ export function endsSentence(word) {
   return sentenceEnders.has(lastMeaningful(graphemes(word)));
 }
 
-export function multiplier(word, endsParagraph) {
+/** `endsWord` is false for the inner pieces of a split long word: they get no punctuation pause. */
+export function multiplier(word, endsParagraph, endsWord = true) {
   const chars = graphemes(word);
   let base = 1;
-  if (endsParagraph) base = Timing.paragraphEnd;
+  if (!endsWord);
+  else if (endsParagraph) base = Timing.paragraphEnd;
   else if (sentenceEnders.has(lastMeaningful(chars))) base = Timing.sentenceEnd;
   else if (clauseEnders.has(lastMeaningful(chars))) base = Timing.clause;
 
@@ -73,6 +75,40 @@ export function parts(token) {
   if (chars.length === 0) return { left: "", orp: "", right: "" };
   const i = token.orpIndex;
   return { left: chars.slice(0, i).join(""), orp: chars[i], right: chars.slice(i + 1).join("") };
+}
+
+const splitLetters = 12, minPieceLetters = 3;
+const separators = new Set(["/", "\\", "-", "_", ".", "?", "&", "=", "#", ":", "|"]);
+const letterCount = (s) => graphemes(s).filter(isWordCharacter).length;
+
+/**
+ * Splits a long word (URL, path, `a-b-c`) after its separators, e.g. `github.com/` `halil-` `balci`.
+ * A run of separators stays together; pieces with fewer than `minPieceLetters` letters join a neighbour.
+ */
+export function pieces(word) {
+  if (letterCount(word) <= splitLetters) return [word];
+  const chars = graphemes(word);
+  const raw = [];
+  let current = "";
+  chars.forEach((c, i) => {
+    current += c;
+    if (separators.has(c) && i + 1 < chars.length && !separators.has(chars[i + 1])) {
+      raw.push(current);
+      current = "";
+    }
+  });
+  raw.push(current);
+  const result = [];
+  let buffer = "";
+  for (const piece of raw) {
+    buffer += piece;
+    if (letterCount(buffer) >= minPieceLetters) {
+      result.push(buffer);
+      buffer = "";
+    }
+  }
+  if (buffer) result.length ? (result[result.length - 1] += buffer) : result.push(buffer);
+  return result;
 }
 
 // Same separators as Swift's Character.isNewline / isWhitespace.
@@ -112,12 +148,17 @@ export function tokenize(text) {
         sentence++;
         startNewSentence = false;
       }
-      tokens.push({
-        text: word,
-        orpIndex: orpIndex(word),
-        delayMultiplier: multiplier(word, false),
-        sentenceIndex: sentence,
-        endsParagraph: false,
+      const split = pieces(word);
+      split.forEach((piece, k) => {
+        const last = k === split.length - 1;
+        tokens.push({
+          text: piece,
+          orpIndex: orpIndex(piece),
+          delayMultiplier: multiplier(piece, false, last),
+          sentenceIndex: sentence,
+          endsParagraph: false,
+          joinsNext: !last,
+        });
       });
       if (endsSentence(word)) startNewSentence = true;
     }

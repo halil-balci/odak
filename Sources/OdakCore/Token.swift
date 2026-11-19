@@ -6,14 +6,21 @@ public struct Token: Equatable, Sendable {
     public let delayMultiplier: Double
     public let sentenceIndex: Int
     public let endsParagraph: Bool
+    /// Piece of a split long word (URL, path): shown with no space before the next token.
+    public let joinsNext: Bool
 
-    public init(text: String, orpIndex: Int, delayMultiplier: Double, sentenceIndex: Int, endsParagraph: Bool) {
+    public init(text: String, orpIndex: Int, delayMultiplier: Double, sentenceIndex: Int, endsParagraph: Bool,
+                joinsNext: Bool = false) {
         self.text = text
         self.orpIndex = orpIndex
         self.delayMultiplier = delayMultiplier
         self.sentenceIndex = sentenceIndex
         self.endsParagraph = endsParagraph
+        self.joinsNext = joinsNext
     }
+
+    /// What follows this token when the text is put back together.
+    public var separator: String { endsParagraph ? "\n\n" : joinsNext ? "" : " " }
 
     /// Text before, at and after the ORP character.
     public var parts: (left: String, orp: String, right: String) {
