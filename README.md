@@ -1,10 +1,24 @@
+<div align="center">
+
 # Odak
 
 **A free, open-source speed reader for macOS** — plus a browser extension that works on any OS.
 
+[![Latest release](https://img.shields.io/github/v/release/halil-balci/odak?label=download&color=E8873A)](../../releases/latest)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-2B2B2D?logo=apple)](#install)
+[![Browser extension](https://img.shields.io/badge/Chrome%20%C2%B7%20Edge%20%C2%B7%20Brave-extension-2B2B2D?logo=googlechrome&logoColor=white)](#browser-extension-chrome-edge-brave--any-os)
+[![CI](https://github.com/halil-balci/odak/actions/workflows/ci.yml/badge.svg)](https://github.com/halil-balci/odak/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/halil-balci/odak?color=8E8B86)](LICENSE)
+
+![Odak showing one word at a time](docs/demo.gif)
+
+</div>
+
 Odak shows text one word at a time at a fixed focus point (RSVP), so your eyes stay still while you read. Pause at any moment and the surrounding text appears; press Space and the page fades away, leaving only the word.
 
-[English](#english) · [Türkçe](#türkçe)
+**[⬇ Download for Mac](../../releases/latest)** · [Browser extension](#browser-extension-chrome-edge-brave--any-os) · [English](#english) · [Türkçe](#türkçe)
+
+If Odak helps you read, a ⭐ helps others find it.
 
 | Paused: the full text around the current word | Reading: only the word |
 | --- | --- |
